@@ -104,7 +104,6 @@ def find_continuous_pattern(allowed_char, text):
     ret = ""
     is_allowed_char_start = False
     for char in text:
-        #print("char:", char)
         if char in allowed_char:
             if len(ret)==0 and not is_allowed_char_start:
                 is_allowed_char_start = True
@@ -181,7 +180,6 @@ def load_chromdriver_normal(webdriver_path, driver_type, adblock_plus_enable):
               renderer="Intel Iris OpenGL Engine",
               fix_hairline=True,
           )
-    #print("driver capabilities", driver.capabilities)
 
     return driver
 
@@ -192,8 +190,6 @@ def load_chromdriver_uc(webdriver_path, adblock_plus_enable):
 
     options = uc.ChromeOptions()
     options.page_load_strategy="eager"
-
-    #print("strategy", options.page_load_strategy)
 
     if adblock_plus_enable:
         no_google_analytics_path, no_ad_path = get_favoriate_extension_path(webdriver_path)
@@ -228,31 +224,19 @@ def load_chromdriver_uc(webdriver_path, adblock_plus_enable):
             if "cannot connect to chrome" in str(exc):
                 if "This version of ChromeDriver only supports Chrome version" in str(exc):
                     is_local_chrome_browser_lower = True
-            print("Error using local chromedriver:", exc)
             pass
 
         if is_local_chrome_browser_lower:
-            print("Use local user downloaded chromedriver to lunch chrome browser.")
             driver_type = "selenium"
             driver = load_chromdriver_normal(webdriver_path, driver_type, adblock_plus_enable)
     else:
-        print("Oops! web driver not on path:",chromedriver_path )
-        print('let uc automatically download chromedriver.')
         try:
             driver = uc.Chrome(options=options, desired_capabilities=caps, suppress_welcome=False)
-            print("Successfully created driver with auto-downloaded chromedriver.")
         except Exception as exc:
-            print("Error with uc auto-download:", exc)
-            print("Trying alternative method...")
             try:
-                # Alternative: Let uc handle everything automatically
                 driver = uc.Chrome(options=options, suppress_welcome=False)
-                print("Successfully created driver with alternative method.")
             except Exception as exc2:
-                print("Failed with alternative method:", exc2)
-                # Last resort: use selenium with auto-download
                 try:
-                    print("Falling back to selenium webdriver manager...")
                     from selenium.webdriver.chrome.service import Service
                     from webdriver_manager.chrome import ChromeDriverManager
                     service = Service(ChromeDriverManager().install())
@@ -260,21 +244,18 @@ def load_chromdriver_uc(webdriver_path, adblock_plus_enable):
                     chrome_options.add_argument("--no-sandbox")
                     chrome_options.add_argument("--disable-dev-shm-usage")
                     driver = webdriver.Chrome(service=service, options=chrome_options)
-                    print("Successfully created driver with webdriver-manager.")
                 except Exception as exc3:
-                    print("All methods failed:", exc3)
+                    pass
 
     if driver is None:
-        print("create web drive object fail!")
+        pass
     else:
         download_dir_path="."
         params = {
             "behavior": "allow",
             "downloadPath": os.path.realpath(download_dir_path)
         }
-        #print("assign setDownloadBehavior.")
         driver.execute_cdp_cmd("Page.setDownloadBehavior", params)
-    #print("driver capabilities", driver.capabilities)
 
     return driver
 
@@ -371,48 +352,6 @@ def get_driver_by_config(config_dict, driver_type):
     pass_date_is_sold_out_enable = config_dict["tixcraft"]["pass_date_is_sold_out"]
     auto_reload_coming_soon_page_enable = config_dict["tixcraft"]["auto_reload_coming_soon_page"]
 
-    # output config:
-    print("maxbot app version", CONST_APP_VERSION)
-    print("python version", platform.python_version())
-    print("platform", platform.platform())
-    print("homepage", homepage)
-    print("browser", browser)
-    print("ticket_number", ticket_number)
-    print("pass_1_seat_remaining", pass_1_seat_remaining_enable)
-
-    # for kktix
-    print("==[kktix]==")
-    print("auto_press_next_step_button", auto_press_next_step_button)
-    print("auto_fill_ticket_number", auto_fill_ticket_number)
-    print("kktix_area_keyword_1", kktix_area_keyword_1)
-    print("kktix_area_keyword_1_and", kktix_area_keyword_1_and)
-    print("kktix_area_keyword_2", kktix_area_keyword_2)
-    print("kktix_area_keyword_2_and", kktix_area_keyword_2_and)
-    print("auto_guess_options", auto_guess_options)
-
-    # for tixcraft
-    print("==[tixcraft]==")
-    print("date_auto_select_enable", date_auto_select_enable)
-    print("date_auto_select_mode", date_auto_select_mode)
-    print("date_keyword", date_keyword)
-    print("pass_date_is_sold_out", pass_date_is_sold_out_enable)
-    print("auto_reload_coming_soon_page", auto_reload_coming_soon_page_enable)
-
-    print("area_auto_select_enable", area_auto_select_enable)
-    print("area_auto_select_mode", area_auto_select_mode)
-    print("area_keyword_1", area_keyword_1)
-    print("area_keyword_2", area_keyword_2)
-    print("area_keyword_3", area_keyword_3)
-    print("area_keyword_4", area_keyword_4)
-
-    print("presale_code", config_dict["tixcraft"]["presale_code"])
-    print("ocr_captcha", config_dict['ocr_captcha'])
-    print("==[advanced]==")
-    print("play_captcha_sound", config_dict["advanced"]["play_captcha_sound"]["enable"])
-    print("sound file path", config_dict["advanced"]["play_captcha_sound"]["filename"])
-    print("adblock_plus_enable", config_dict["advanced"]["adblock_plus_enable"])
-    print("debug Mode", debugMode)
-
     # entry point
     if homepage is None:
         homepage = ""
@@ -421,10 +360,8 @@ def get_driver_by_config(config_dict, driver_type):
 
     Root_Dir = get_app_root()
     webdriver_path = os.path.join(Root_Dir, "webdriver")
-    print("platform.system().lower():", platform.system().lower())
 
     adblock_plus_enable = config_dict["advanced"]["adblock_plus_enable"]
-    print("adblock_plus_enable:", adblock_plus_enable)
 
     if browser == "chrome":
         # method 6: Selenium Stealth
@@ -3986,7 +3923,7 @@ def cityline_date_auto_select(driver, auto_select_mode, date_keyword, auto_reloa
                 if len(formated_area_list) == 0:
                     try:
                         driver.refresh()
-                        time.sleep(0.5)
+                        time.sleep(0.2)
                     except Exception as exc:
                         pass
 
@@ -4536,7 +4473,7 @@ def ibon_date_auto_select(driver, auto_select_mode, date_keyword, auto_reload_co
                 if len(formated_area_list) == 0:
                     try:
                         driver.refresh()
-                        time.sleep(0.5)
+                        time.sleep(0.2)
                     except Exception as exc:
                         pass
     return ret
@@ -4867,67 +4804,206 @@ def facebook_login(driver, account, password=""):
 
 def kktix_login(driver, account, password=""):
     ret = False
+    
+    print(f"KKTIX: 開始登入流程，帳號: {account[:3]}***{account[-3:] if len(account) > 6 else '***'}")
+    
+    # 尋找帳號輸入框
     el_email = None
-    try:
-        el_email = driver.find_element(By.CSS_SELECTOR, '#user_login')
-    except Exception as exc:
-        #print("find #email fail")
-        #print(exc)
-        pass
-
-    is_visible = False
-    if el_email is not None:
+    email_selectors = [
+        '#user_login',  # 主要選擇器
+        'input[name="user[login]"]',
+        'input[name="login"]',
+        'input[type="email"]',
+        'input[placeholder*="帳號"]',
+        'input[placeholder*="Email"]',
+        'input[placeholder*="email"]',
+        '.login-form input[type="text"]',
+        '.signin-form input[type="text"]'
+    ]
+    
+    print("KKTIX: 尋找帳號輸入框...")
+    for i, selector in enumerate(email_selectors):
         try:
-            if el_email.is_enabled():
-                is_visible = True
-        except Exception as exc:
-            pass
+            el_email = driver.find_element(By.CSS_SELECTOR, selector)
+            if el_email.is_displayed() and el_email.is_enabled():
+                print(f"KKTIX: 找到帳號輸入框 (選擇器 {i+1}): {selector}")
+                break
+            else:
+                el_email = None
+        except Exception as e:
+            print(f"KKTIX: 選擇器 {i+1} 失敗: {selector} - {e}")
+            continue
 
     is_email_sent = False
-    if is_visible:
+    if el_email is not None:
         try:
-            inputed_text = el_email.get_attribute('value')
-            if inputed_text is not None:
-                if len(inputed_text) == 0:
-                    el_email.send_keys(account)
-                    is_email_sent = True
-                    print("sent account:", account)
+            # 確保元素可見和可互動
+            driver.execute_script("arguments[0].scrollIntoView(true);", el_email)
+            
+            current_value = el_email.get_attribute('value') or ''
+            print(f"KKTIX: 目前帳號輸入框內容: '{current_value}'")
+            
+            if current_value != account:
+                # 清除現有內容並輸入新帳號
+                el_email.clear()
+                el_email.send_keys(account)
+                is_email_sent = True
+                print(f"KKTIX: 帳號輸入成功: {account[:3]}***{account[-3:] if len(account) > 6 else '***'}")
+            else:
+                is_email_sent = True
+                print("KKTIX: 帳號已存在，跳過輸入")
+                
         except Exception as exc:
-            pass
+            print(f"KKTIX: 輸入帳號失敗: {exc}")
 
+    # 尋找密碼輸入框
     el_pass = None
-    if is_email_sent:
+    password_selectors = [
+        '#user_password',  # 主要選擇器
+        'input[name="user[password]"]',
+        'input[name="password"]',
+        'input[type="password"]',
+        'input[placeholder*="密碼"]',
+        'input[placeholder*="Password"]',
+        'input[placeholder*="password"]',
+        '.login-form input[type="password"]',
+        '.signin-form input[type="password"]'
+    ]
+    
+    print("KKTIX: 尋找密碼輸入框...")
+    for i, selector in enumerate(password_selectors):
         try:
-            el_pass = driver.find_element(By.CSS_SELECTOR, '#user_password')
-        except Exception as exc:
-            pass
-
-    is_visible = False
-    if el_pass is not None:
-        try:
-            if el_pass.is_enabled():
-                is_visible = True
-        except Exception as exc:
-            pass
+            el_pass = driver.find_element(By.CSS_SELECTOR, selector)
+            if el_pass.is_displayed() and el_pass.is_enabled():
+                print(f"KKTIX: 找到密碼輸入框 (選擇器 {i+1}): {selector}")
+                break
+            else:
+                el_pass = None
+        except Exception as e:
+            print(f"KKTIX: 選擇器 {i+1} 失敗: {selector} - {e}")
+            continue
 
     is_password_sent = False
-    if is_visible and len(password) > 0:
+    if el_pass is not None and len(password) > 0:
         try:
-            inputed_password = el_pass.get_attribute('value')
-            if inputed_password is not None:
-                if len(inputed_password) == 0:
-                    el_pass.send_keys(password)
-                    is_password_sent = True
-                    print("sent password by bot.")
+            # 確保元素可見和可互動
+            driver.execute_script("arguments[0].scrollIntoView(true);", el_pass)
+            
+            current_pwd = el_pass.get_attribute('value') or ''
+            print(f"KKTIX: 目前密碼輸入框內容長度: {len(current_pwd)}")
+            
+            if current_pwd != password:
+                # 清除現有內容並輸入新密碼
+                el_pass.clear()
+                el_pass.send_keys(password)
+                is_password_sent = True
+                print("KKTIX: 密碼輸入成功")
+            else:
+                is_password_sent = True
+                print("KKTIX: 密碼已存在，跳過輸入")
+                
         except Exception as exc:
-            pass
+            print(f"KKTIX: 輸入密碼失敗: {exc}")
+    elif el_pass is None:
+        print("KKTIX: 找不到密碼輸入框")
+    elif len(password) == 0:
+        print("KKTIX: 密碼為空，跳過密碼輸入")
 
-    if is_visible and not is_password_sent:
-        try:
-            el_pass.click()
-        except Exception as exc:
-            pass
+    # 如果帳號和密碼都輸入成功，嘗試點擊登入按鈕
+    if is_email_sent and (is_password_sent or len(password) == 0):
+        print("KKTIX: 尋找登入按鈕...")
+        login_button_selectors = [
+            # 精確的文字匹配 (XPath)
+            '//button[contains(text(), "登入")]',
+            '//input[@type="submit" and contains(@value, "登入")]',
+            '//button[contains(@class, "login") or contains(@class, "signin")]',
+            # CSS 選擇器
+            'button[type="submit"]',
+            'input[type="submit"]',
+            'button.btn-primary',
+            'button.login-btn',
+            'button.signin-btn',
+            '.login-button',
+            '.signin-button',
+            '#login-btn',
+            '#signin-btn',
+            '.btn.btn-primary',
+            # 表單相關按鈕
+            'form button[type="submit"]',
+            'form input[type="submit"]',
+            'form button:last-child',
+            # 通用但謹慎的選擇器
+            'button.btn'
+        ]
+        
+        login_button = None
+        for i, selector in enumerate(login_button_selectors):
+            try:
+                if selector.startswith('//'):
+                    # XPath 選擇器
+                    login_button = driver.find_element(By.XPATH, selector)
+                else:
+                    # CSS 選擇器
+                    login_button = driver.find_element(By.CSS_SELECTOR, selector)
+                
+                if login_button.is_displayed() and login_button.is_enabled():
+                    print(f"KKTIX: 找到登入按鈕 (選擇器 {i+1}): {selector}")
+                    break
+                else:
+                    login_button = None
+            except Exception as e:
+                print(f"KKTIX: 登入按鈕選擇器 {i+1} 失敗: {selector} - {e}")
+                continue
+        
+        if login_button:
+            try:
+                # 確保按鈕可見
+                driver.execute_script("arguments[0].scrollIntoView(true);", login_button)
+                
+                # 點擊登入按鈕
+                login_button.click()
+                ret = True
+                print("KKTIX: 成功點擊登入按鈕")
+                
+                # 等待一下讓頁面響應
+                import time
+                time.sleep(1)
+                
+            except Exception as exc:
+                print(f"KKTIX: 點擊登入按鈕失敗: {exc}")
+                # 嘗試使用 JavaScript 點擊
+                try:
+                    driver.execute_script("arguments[0].click();", login_button)
+                    ret = True
+                    print("KKTIX: 使用 JavaScript 成功點擊登入按鈕")
+                except Exception as exc2:
+                    print(f"KKTIX: JavaScript 點擊也失敗: {exc2}")
+        else:
+            print("KKTIX: 找不到登入按鈕，列出頁面所有按鈕...")
+            try:
+                all_buttons = driver.find_elements(By.TAG_NAME, 'button')
+                all_inputs = driver.find_elements(By.CSS_SELECTOR, 'input[type="submit"]')
+                
+                print(f"KKTIX: 找到 {len(all_buttons)} 個 button 元素和 {len(all_inputs)} 個 submit 輸入")
+                
+                for i, btn in enumerate(all_buttons[:5]):  # 只顯示前5個
+                    try:
+                        btn_text = btn.text.strip()
+                        btn_class = btn.get_attribute('class') or ''
+                        btn_type = btn.get_attribute('type') or ''
+                        print(f"  Button {i+1}: 文字='{btn_text}', class='{btn_class}', type='{btn_type}'")
+                    except:
+                        pass
+                        
+            except Exception as e:
+                print(f"KKTIX: 無法列出按鈕: {e}")
+    else:
+        if not is_email_sent:
+            print("KKTIX: 帳號未成功輸入，跳過登入按鈕點擊")
+        if not is_password_sent and len(password) > 0:
+            print("KKTIX: 密碼未成功輸入，跳過登入按鈕點擊")
 
+    print(f"KKTIX: 登入流程結束，結果: {ret}")
     return ret
 
 def ticketplus_login(driver, phone, password=""):
@@ -5590,12 +5666,41 @@ def kktix_main(driver, url, config_dict, answer_index, kktix_register_status_las
     kktix_account = config_dict["advanced"]["kktix_account"]
     kktix_password = config_dict["advanced"]["password"] if "password" in config_dict["advanced"] else ""
 
-    is_url_contain_sign_in = False
+    # 擴展登入頁面檢測邏輯
+    login_keywords = ['/users/sign_in', '/login', '/signin', '/auth', '/account/login']
+    is_url_contain_sign_in = any(keyword in url.lower() for keyword in login_keywords)
+    
+    # 也檢查頁面是否包含登入表單（即使 URL 不明顯）
+    if not is_url_contain_sign_in:
+        try:
+            # 檢查是否有登入相關的表單元素
+            login_form_selectors = [
+                '#user_login',  # KKTIX 帳號輸入框
+                '#user_password',  # KKTIX 密碼輸入框
+                'form[action*="sign_in"]',
+                'form[action*="login"]',
+                'form input[type="password"]'
+            ]
+            
+            for selector in login_form_selectors:
+                try:
+                    element = driver.find_element(By.CSS_SELECTOR, selector)
+                    if element.is_displayed():
+                        is_url_contain_sign_in = True
+                        print(f"KKTIX: 偵測到登入表單元素: {selector}")
+                        break
+                except:
+                    continue
+        except Exception as e:
+            print(f"KKTIX: 檢測登入表單時出錯: {e}")
+
     # fix https://kktix.com/users/sign_in?back_to=https://kktix.com/events/xxxx and registerStatus: SOLD_OUT cause page refresh.
-    if '/users/sign_in?' in url:
+    if is_url_contain_sign_in:
+        print(f"KKTIX: 偵測到登入頁面，帳號長度: {len(kktix_account)}")
         if len(kktix_account) > 4:
             kktix_login(driver, kktix_account, kktix_password)
-        is_url_contain_sign_in = True
+        else:
+            print("KKTIX: 帳號長度不足，跳過自動登入")
 
     if not is_url_contain_sign_in:
         if '/registrations/new' in url:
@@ -5838,16 +5943,16 @@ def ticketplus_area_auto_select(driver, area_auto_select_mode, area_keyword_1, a
 
     is_price_assign_by_bot = False
     is_need_refresh = False
+    target_area_element = None
     
     if show_debug_message:
         print("TicketPlus: 開始尋找票區選項")
 
-    # 清理關鍵字
     area_keyword_1 = format_keyword_string(area_keyword_1)
     area_keyword_1_and = format_keyword_string(area_keyword_1_and)
 
-    # 多種票區選擇器
     area_selectors = [
+        "div.v-card button",
         ".seat-area-item",
         ".ticket-area-item", 
         ".price-area",
@@ -5946,11 +6051,12 @@ def ticketplus_area_auto_select(driver, area_auto_select_mode, area_keyword_1, a
                 if target_area.is_enabled() and target_area.is_displayed():
                     # 滾動到元素位置
                     driver.execute_script("arguments[0].scrollIntoView(true);", target_area)
-                    time.sleep(0.5)
+                    time.sleep(0.2)
                     
                     # 嘗試點擊
                     target_area.click()
                     is_price_assign_by_bot = True
+                    target_area_element = target_area  # 設定目標元素
                     
                     if show_debug_message:
                         print("TicketPlus: 成功點擊票區")
@@ -5963,6 +6069,7 @@ def ticketplus_area_auto_select(driver, area_auto_select_mode, area_keyword_1, a
                 try:
                     driver.execute_script("arguments[0].click();", target_area)
                     is_price_assign_by_bot = True
+                    target_area_element = target_area  # 設定目標元素
                     if show_debug_message:
                         print("TicketPlus: JavaScript 點擊成功")
                 except Exception as exc2:
@@ -5975,14 +6082,14 @@ def ticketplus_area_auto_select(driver, area_auto_select_mode, area_keyword_1, a
         if show_debug_message:
             print("TicketPlus: 沒有找到任何票區選項")
 
-    return is_need_refresh, is_price_assign_by_bot
+    return is_need_refresh, is_price_assign_by_bot, target_area_element
 
 def ticketplus_ticket_main(driver, config_dict):
     """
     TicketPlus 搶票主函數 - 處理票券選擇、驗證碼等
     """
     show_debug_message = True
-    show_debug_message = False
+    #show_debug_message = False
     
     if show_debug_message:
         print("TicketPlus: 開始搶票流程")
@@ -6007,7 +6114,9 @@ def ticketplus_ticket_main(driver, config_dict):
         '.ticket-number-select select',
         '.quantity-select select',
         'input[type="number"][name*="quantity"]',
-        'input[type="number"][name*="ticket"]'
+        'input[type="number"][name*="ticket"]',
+        'select[name="ticketAmount"]',
+        'select#ticketAmount'
     ]
     
     for selector in ticket_selectors:
@@ -6269,34 +6378,155 @@ def ticketplus_ticket_number_auto_select(driver, ticket_number):
     return is_ticket_number_assigned
 
 def ticketplus_next_button_press(driver):
+    show_debug_message = True
+    #show_debug_message = False
+    
     ret = False
     el_btn = None
     
-    # Try to find next/continue button
-    try:
-        el_btn = driver.find_element(By.CSS_SELECTOR, 'button.btn-next')
-    except Exception as exc:
-        pass
-
-    if el_btn is None:
+    if show_debug_message:
+        print("TicketPlus: 開始尋找下一步按鈕...")
+    
+    # 根據實際HTML結構優化的按鈕選擇器列表
+    button_selectors = [
+        # 最精確的選擇器 - 根據提供的HTML
+        'button.nextBtn.v-btn.v-btn--block.v-btn--has-bg',
+        'button.nextBtn.v-btn',
+        'button.nextBtn',
+        '.nextBtn',
+        # Vue.js 相關選擇器
+        '.v-btn.v-btn--block .v-btn__content:contains("下一步")',
+        'button.v-btn.v-btn--block[class*="nextBtn"]',
+        'button.v-btn[class*="nextBtn"]',
+        # 通用下一步按鈕
+        'button.btn-next',
+        'button.continue-btn', 
+        'button.next-btn',
+        'button[type="submit"]',
+        'input[type="submit"]',
+        'button.submit-btn',
+        'button.confirm-btn',
+        'button.purchase-btn',
+        'button.buy-btn',
+        '.next-button',
+        '.continue-button',
+        '.submit-button',
+        '#nextBtn',
+        '#continueBtn',
+        '#submitBtn',
+        '.btn.btn-primary',
+        '.v-btn.v-btn--contained',
+        # 謹慎的通用選擇器
+        'button.v-btn.v-btn--block:not([disabled])',
+        'button:not([disabled])',
+        'input[type="submit"]:not([disabled])'
+    ]
+    
+    # XPath 選擇器（基於文字內容）
+    xpath_selectors = [
+        '//button[contains(text(), "下一步")]',
+        '//button[contains(text(), "繼續")]',
+        '//button[contains(text(), "確認")]',
+        '//button[contains(text(), "Next")]',
+        '//button[contains(text(), "Continue")]',
+        '//button[contains(text(), "Confirm")]',
+        '//button[contains(text(), "Submit")]',
+        '//input[@type="submit" and contains(@value, "下一步")]',
+        '//input[@type="submit" and contains(@value, "繼續")]',
+        '//input[@type="submit" and contains(@value, "確認")]'
+    ]
+    
+    # 先嘗試 CSS 選擇器
+    for i, selector in enumerate(button_selectors):
         try:
-            el_btn = driver.find_element(By.CSS_SELECTOR, 'button.continue-btn')
+            buttons = driver.find_elements(By.CSS_SELECTOR, selector)
+            for btn in buttons:
+                if btn.is_displayed() and btn.is_enabled():
+                    # 檢查按鈕文字是否合適
+                    btn_text = btn.text.strip().lower()
+                    btn_value = (btn.get_attribute('value') or '').strip().lower()
+                    
+                    # 排除明顯不是下一步的按鈕
+                    exclude_keywords = ['取消', 'cancel', '返回', 'back', '關閉', 'close', '刪除', 'delete']
+                    is_excluded = any(keyword in btn_text or keyword in btn_value for keyword in exclude_keywords)
+                    
+                    if not is_excluded:
+                        el_btn = btn
+                        if show_debug_message:
+                            print(f"TicketPlus: 透過 CSS 選擇器 {i+1} 找到按鈕: '{btn_text}' / '{btn_value}'")
+                        break
+            
+            if el_btn:
+                break
+                
         except Exception as exc:
-            pass
-
+            if show_debug_message and i < 3:  # 只顯示前幾個錯誤
+                print(f"TicketPlus: CSS 選擇器 {i+1} 失敗: {selector} - {exc}")
+            continue
+    
+    # 如果 CSS 選擇器失敗，嘗試 XPath
     if el_btn is None:
-        try:
-            el_btn = driver.find_element(By.CSS_SELECTOR, 'input[type="submit"][value*="下一步"]')
-        except Exception as exc:
-            pass
+        for i, xpath in enumerate(xpath_selectors):
+            try:
+                buttons = driver.find_elements(By.XPATH, xpath)
+                for btn in buttons:
+                    if btn.is_displayed() and btn.is_enabled():
+                        el_btn = btn
+                        if show_debug_message:
+                            print(f"TicketPlus: 透過 XPath {i+1} 找到按鈕: '{btn.text.strip()}'")
+                        break
+                
+                if el_btn:
+                    break
+                    
+            except Exception as exc:
+                if show_debug_message and i < 3:
+                    print(f"TicketPlus: XPath {i+1} 失敗: {xpath} - {exc}")
+                continue
 
+    # 如果還是找不到，列出頁面所有可能的按鈕
+    if el_btn is None and show_debug_message:
+        print("TicketPlus: 找不到下一步按鈕，列出所有可見按鈕...")
+        try:
+            all_buttons = driver.find_elements(By.TAG_NAME, 'button')
+            all_inputs = driver.find_elements(By.CSS_SELECTOR, 'input[type="submit"]')
+            all_clickable = all_buttons + all_inputs
+            
+            for i, btn in enumerate(all_clickable[:10]):  # 只顯示前10個
+                try:
+                    if btn.is_displayed() and btn.is_enabled():
+                        btn_text = btn.text.strip()
+                        btn_value = btn.get_attribute('value') or ''
+                        btn_class = btn.get_attribute('class') or ''
+                        print(f"  按鈕 {i+1}: 文字='{btn_text}', 值='{btn_value}', 類別='{btn_class[:50]}'")
+                except:
+                    continue
+        except Exception as e:
+            print(f"TicketPlus: 無法列出按鈕: {e}")
+
+    # 點擊找到的按鈕
     if el_btn is not None:
         try:
             if el_btn.is_enabled() and el_btn.is_displayed():
+                # 確保按鈕在視野內
+                driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", el_btn)
+                time.sleep(0.2)
+                
+                # 使用 JavaScript 點擊避免被攔截
                 driver.execute_script("arguments[0].click();", el_btn)
                 ret = True
+                
+                if show_debug_message:
+                    print("TicketPlus: 成功點擊下一步按鈕")
+            else:
+                if show_debug_message:
+                    print("TicketPlus: 找到的按鈕不可用")
         except Exception as exc:
-            pass
+            if show_debug_message:
+                print(f"TicketPlus: 點擊下一步按鈕失敗: {exc}")
+    else:
+        if show_debug_message:
+            print("TicketPlus: 未找到任何下一步按鈕")
 
     return ret
 
@@ -6518,12 +6748,675 @@ def ticketplus_main(driver, url, config_dict):
     if '/checkout/' in url or '/order/' in url:
         if show_debug_message:
             print("found TicketPlus checkout page")
-        # Auto fill and submit if needed
-        ticketplus_config = config_dict.get("ticketplus", {})
-        auto_press_next_step_button = ticketplus_config.get("auto_press_next_step_button", 
-                                                           config_dict.get("kktix", {}).get("auto_press_next_step_button", True))
-        if auto_press_next_step_button:
-            ticketplus_next_button_press(driver)
+        ticketplus_order_main(driver, config_dict)
+
+def get_current_ticket_quantity(driver):
+    """
+    獲取當前已設定的票券數量
+    """
+    show_debug_message = True
+    show_debug_message = False
+    
+    try:
+        # 方法1: 檢查數量輸入框的值
+        quantity_input_selectors = [
+            "input[type='number']",
+            "input[name*='quantity']", 
+            "input[id*='quantity']",
+            "input[name*='ticket']", 
+            "input[id*='ticket']",
+            "input[name*='amount']",
+            "input[id*='amount']",
+            "input[class*='quantity']",
+            "input[class*='ticket']",
+            "input[class*='amount']",
+            ".quantity-input input",
+            ".ticket-input input",
+            ".amount-input input"
+        ]
+        
+        for selector in quantity_input_selectors:
+            try:
+                inputs = driver.find_elements(By.CSS_SELECTOR, selector)
+                for input_elem in inputs:
+                    if input_elem.is_displayed():
+                        value = input_elem.get_attribute('value')
+                        if value and value.strip() and value.isdigit():
+                            qty = int(value)
+                            if show_debug_message:
+                                print(f"TicketPlus: 從輸入框 ({selector}) 獲取到數量: {qty}")
+                            return qty
+            except:
+                continue
+        
+        # 方法2: 檢查數量顯示文字 - 擴展選擇器
+        quantity_display_selectors = [
+            ".quantity-display", 
+            ".ticket-quantity", 
+            ".selected-quantity",
+            ".quantity-value",
+            ".ticket-count",
+            ".item-count",
+            ".count-display",
+            "*[class*='quantity']:not([class*='button']):not([class*='control'])", 
+            "*[class*='count']:not([class*='button']):not([class*='control'])",
+            "*[class*='amount']:not([class*='button']):not([class*='control'])",
+            ".v-card .v-btn + span",  # Vue.js 按鈕旁邊的數字
+            ".v-expansion-panel-content span:contains('張')",  # 包含"張"的文字
+            ".v-expansion-panel-content span[class*='text']",
+            "span[class*='number']",
+            "span[class*='digit']",
+            "div[class*='quantity']",
+            "div[class*='count']"
+        ]
+        
+        for selector in quantity_display_selectors:
+            try:
+                if ':contains(' in selector:
+                    # 使用XPath處理包含文字的選擇器
+                    text_content = selector.split(':contains(')[1].split(')')[0].strip("'\"")
+                    xpath_selector = f"//*[contains(text(), '{text_content}')]"
+                    elements = driver.find_elements(By.XPATH, xpath_selector)
+                else:
+                    elements = driver.find_elements(By.CSS_SELECTOR, selector)
+                
+                for display_elem in elements:
+                    if display_elem.is_displayed():
+                        text = display_elem.text.strip()
+                        # 檢查多種數字格式
+                        if text:
+                            # 直接是數字
+                            if text.isdigit() and len(text) <= 2:
+                                qty = int(text)
+                                if qty > 0:
+                                    if show_debug_message:
+                                        print(f"TicketPlus: 從顯示文字 ({selector}) 獲取到數量: {qty}")
+                                    return qty
+                            
+                            # 包含"張"的格式，如"3張"
+                            elif '張' in text:
+                                import re
+                                match = re.search(r'(\d+)張', text)
+                                if match:
+                                    qty = int(match.group(1))
+                                    if show_debug_message:
+                                        print(f"TicketPlus: 從顯示文字 ({selector}) '張'格式 獲取到數量: {qty}")
+                                    return qty
+                            
+                            # 包含數字的其他格式
+                            elif any(char.isdigit() for char in text):
+                                import re
+                                numbers = re.findall(r'\d+', text)
+                                if numbers:
+                                    # 取第一個數字，但排除明顯不是數量的大數字
+                                    for num_str in numbers:
+                                        num = int(num_str)
+                                        if 1 <= num <= 20:  # 合理的票券數量範圍
+                                            if show_debug_message:
+                                                print(f"TicketPlus: 從顯示文字 ({selector}) 數字格式 獲取到數量: {num}")
+                                            return num
+            except Exception as e:
+                if show_debug_message:
+                    print(f"TicketPlus: 選擇器 {selector} 失敗: {e}")
+                continue
+        
+        # 方法3: 檢查Vue.js數據屬性
+        try:
+            # 嘗試從Vue組件獲取數據
+            vue_elements = driver.find_elements(By.CSS_SELECTOR, "[data-v-*], .v-*")
+            for elem in vue_elements:
+                try:
+                    # 檢查元素的data屬性
+                    attrs = driver.execute_script("""
+                        var attrs = {};
+                        for (var i = 0; i < arguments[0].attributes.length; i++) {
+                            var attr = arguments[0].attributes[i];
+                            if (attr.name.includes('data') || attr.name.includes('quantity') || attr.name.includes('count')) {
+                                attrs[attr.name] = attr.value;
+                            }
+                        }
+                        return attrs;
+                    """, elem)
+                    
+                    for attr_name, attr_value in attrs.items():
+                        if attr_value and attr_value.isdigit():
+                            qty = int(attr_value)
+                            if 1 <= qty <= 20:
+                                if show_debug_message:
+                                    print(f"TicketPlus: 從Vue屬性 {attr_name} 獲取到數量: {qty}")
+                                return qty
+                except:
+                    continue
+        except:
+            pass
+                
+    except Exception as exc:
+        if show_debug_message:
+            print(f"TicketPlus: 獲取票券數量失敗: {exc}")
+    
+    if show_debug_message:
+        print("TicketPlus: 無法檢測到票券數量，返回預設值 1")
+    return 1  # 預設返回1
+
+def ticketplus_order_main(driver, config_dict):
+    """
+    TicketPlus /order/ 頁面處理函式
+    """
+    show_debug_message = True
+    #show_debug_message = False
+    
+    if show_debug_message:
+        print("TicketPlus: 開始處理 order 頁面")
+
+    # 檢查是否已經處理過這個頁面
+    try:
+        is_processed = driver.execute_script("return window.ticketplus_processed || false;")
+        if is_processed:
+            if show_debug_message:
+                print("TicketPlus: 頁面已經處理過，跳過重複執行")
+            return
+    except:
+        pass
+
+    # 檢查是否已經處理過這個頁面並且可以繼續下一步
+    try:
+        # 更精確地檢查是否可以直接進行下一步
+        can_proceed_to_next = False
+        
+        # 檢查是否有"下一步"或"確認"按鈕可點擊
+        next_button_selectors = [
+            'button:contains("下一步")',
+            'button:contains("確認")', 
+            'button:contains("繼續")',
+            'button:contains("Next")',
+            'button:contains("Continue")',
+            'button:contains("Confirm")',
+            'button.btn-next:not(:disabled)',
+            'button.next-btn:not(:disabled)',
+            'button.continue-btn:not(:disabled)',
+            'button[type="submit"]:not(:disabled)'
+        ]
+        
+        for selector in next_button_selectors:
+            try:
+                # 對於包含文字的按鈕使用XPath
+                if ':contains(' in selector:
+                    text = selector.split(':contains("')[1].split('")')[0]
+                    xpath_selector = f'//button[contains(text(), "{text}") and not(@disabled)]'
+                    buttons = driver.find_elements(By.XPATH, xpath_selector)
+                else:
+                    buttons = driver.find_elements(By.CSS_SELECTOR, selector)
+                    
+                for btn in buttons:
+                    if btn.is_displayed() and btn.is_enabled():
+                        # 檢查數量是否正確設定
+                        current_qty = get_current_ticket_quantity(driver)
+                        target_qty = config_dict.get("ticket_number", 1)
+                        
+                        if current_qty == target_qty and current_qty > 1:
+                            can_proceed_to_next = True
+                            if show_debug_message:
+                                print(f"TicketPlus: 數量已正確設定為 {current_qty}，直接進行下一步")
+                            
+                            # 直接點擊下一步按鈕
+                            try:
+                                driver.execute_script("arguments[0].click();", btn)
+                                if show_debug_message:
+                                    print("TicketPlus: 已點擊下一步按鈕")
+                                return
+                            except Exception as click_exc:
+                                if show_debug_message:
+                                    print(f"TicketPlus: 點擊下一步失敗: {click_exc}")
+                            break
+            except Exception as selector_exc:
+                continue
+                
+        if can_proceed_to_next:
+            return  # 已經處理完畢
+            
+    except Exception as check_exc:
+        if show_debug_message:
+            print(f"TicketPlus: 下一步檢查失敗: {check_exc}")
+
+    # 從 config 獲取設定
+    ticketplus_config = config_dict.get("ticketplus", {})
+    tixcraft_config = config_dict.get("tixcraft", {})
+    
+    area_auto_select_config = ticketplus_config.get("area_auto_select", tixcraft_config.get("area_auto_select", {}))
+    auto_select_mode = area_auto_select_config.get("mode", "from top to bottom")
+    area_keyword_1 = ticketplus_config.get("area_keyword_1", area_auto_select_config.get("area_keyword_1", "")).strip()
+    area_keyword_2 = ticketplus_config.get("area_keyword_2", area_auto_select_config.get("area_keyword_2", "")).strip()
+    ticket_number = config_dict.get("ticket_number", 1)
+    auto_press_next_step_button = ticketplus_config.get("auto_press_next_step_button", True)
+
+    # 1. 選擇票區
+    is_need_refresh, is_price_assign_by_bot, target_area_element = ticketplus_area_auto_select(driver, auto_select_mode, area_keyword_1, "")
+    if not is_price_assign_by_bot and len(area_keyword_2) > 0:
+        is_need_refresh, is_price_assign_by_bot, target_area_element = ticketplus_area_auto_select(driver, auto_select_mode, area_keyword_2, "")
+
+    # 2. 如果票區選擇成功，則調整數量
+    if is_price_assign_by_bot and target_area_element:
+        if show_debug_message:
+            print(f"TicketPlus: 票區 '{target_area_element.text}' 選擇成功，開始設定數量...")
+        
+        try:
+            # 等待一小段時間讓頁面穩定
+            time.sleep(0.2)
+            
+            # 尋找數量調整按鈕的多種方式
+            plus_button = None
+            
+            # 方法1: 在擴展面板內尋找加號按鈕
+            try:
+                # 先找到包含票區的擴展面板
+                expansion_panel = target_area_element.find_element(By.XPATH, "./ancestor::div[contains(@class, 'v-expansion-panel')]")
+                
+                # 尋找面板內容區域
+                panel_content = expansion_panel.find_element(By.CSS_SELECTOR, ".v-expansion-panel-content")
+                
+                # 在內容區域尋找加號按鈕 - 修復CSS選擇器
+                plus_buttons = panel_content.find_elements(By.CSS_SELECTOR, "button[class*='plus'], button[aria-label*='增加'], button[title*='增加']")
+                
+                # 嘗試使用XPath查找包含+的按鈕
+                if not plus_buttons:
+                    plus_buttons = panel_content.find_elements(By.XPATH, ".//button[contains(text(), '+')]")
+                
+                if not plus_buttons:
+                    # 尋找所有按鈕，通常第二個是加號
+                    all_buttons = panel_content.find_elements(By.CSS_SELECTOR, "button")
+                    if len(all_buttons) >= 2:
+                        plus_button = all_buttons[1]
+                else:
+                    plus_button = plus_buttons[0]
+                    
+            except Exception as e1:
+                if show_debug_message:
+                    print(f"TicketPlus: 方法1失敗: {e1}")
+
+            # 方法2: 直接在v-card內尋找
+            if plus_button is None:
+                try:
+                    parent_card = target_area_element.find_element(By.XPATH, "./ancestor::div[contains(@class, 'v-card')]")
+                    
+                    # 先嘗試找到+號按鈕
+                    plus_buttons = parent_card.find_elements(By.XPATH, ".//button[contains(text(), '+')]")
+                    if plus_buttons:
+                        plus_button = plus_buttons[0]
+                    else:
+                        # 備用：找所有按鈕
+                        buttons = parent_card.find_elements(By.CSS_SELECTOR, "button")
+                        
+                        # 尋找文字包含+的按鈕或位置為第二個的按鈕
+                        for i, btn in enumerate(buttons):
+                            try:
+                                btn_text = btn.text.strip()
+                                btn_class = btn.get_attribute('class') or ''
+                                if '+' in btn_text or 'plus' in btn_class.lower():
+                                    plus_button = btn
+                                    break
+                                elif i == 1:  # 備用：第二個按鈕
+                                    plus_button = btn
+                            except:
+                                continue
+                            
+                except Exception as e2:
+                    if show_debug_message:
+                        print(f"TicketPlus: 方法2失敗: {e2}")
+
+            # 方法3: 使用更安全的選擇器全域搜尋
+            if plus_button is None:
+                try:
+                    if show_debug_message:
+                        print("TicketPlus: 開始全域搜尋加號按鈕...")
+                    
+                    # 修復CSS選擇器語法 - 更具體的選擇器
+                    safe_selectors = [
+                        "button[class*='plus']",
+                        "button[class*='add']",
+                        "button[class*='increase']",
+                        ".quantity-control button:nth-child(2)",
+                        ".quantity-control button:last-child",
+                        "button[aria-label*='increase']",
+                        "button[aria-label*='增加']", 
+                        "button[title*='plus']",
+                        "button[title*='增加']",
+                        "button[data-action='increase']",
+                        "button[data-action='add']",
+                        ".btn-increase",
+                        ".btn-add",
+                        ".btn-plus"
+                    ]
+                    
+                    for i, selector in enumerate(safe_selectors):
+                        try:
+                            buttons = driver.find_elements(By.CSS_SELECTOR, selector)
+                            if show_debug_message and buttons:
+                                print(f"TicketPlus: 選擇器 {i+1} ({selector}) 找到 {len(buttons)} 個按鈕")
+                            
+                            for btn in buttons:
+                                if btn.is_displayed() and btn.is_enabled():
+                                    # 檢查按鈕是否在票區相關的容器內
+                                    try:
+                                        btn_text = btn.text.strip()
+                                        btn_parent = btn.find_element(By.XPATH, "./..")
+                                        parent_text = btn_parent.text.strip()
+                                        
+                                        if show_debug_message:
+                                            print(f"TicketPlus: 候選按鈕文字: '{btn_text}', 父容器文字包含票區信息: {'NT.' in parent_text or '剩餘' in parent_text}")
+                                        
+                                        # 確保這個按鈕是在票區相關的容器內
+                                        if 'NT.' in parent_text or '剩餘' in parent_text or '票' in parent_text:
+                                            plus_button = btn
+                                            if show_debug_message:
+                                                print(f"TicketPlus: 透過選擇器 {i+1} 找到合適的加號按鈕")
+                                            break
+                                    except:
+                                        # 如果無法檢查父容器，就使用這個按鈕
+                                        plus_button = btn
+                                        if show_debug_message:
+                                            print(f"TicketPlus: 透過選擇器 {i+1} 找到按鈕 (無法驗證父容器)")
+                                        break
+                            
+                            if plus_button:
+                                break
+                        except Exception as selector_exc:
+                            if show_debug_message:
+                                print(f"TicketPlus: 選擇器 {i+1} 失敗: {selector_exc}")
+                            continue
+                    
+                    # 如果還是找不到，使用XPath搜尋所有包含+號的按鈕
+                    if not plus_button:
+                        if show_debug_message:
+                            print("TicketPlus: CSS選擇器都失敗，嘗試XPath...")
+                        
+                        xpath_selectors = [
+                            "//button[contains(text(), '+')]",
+                            "//button[text()='+']",
+                            "//button[contains(@class, 'plus')]",
+                            "//button[contains(@class, 'add')]",
+                            "//button[contains(@aria-label, '增加')]",
+                            "//button[contains(@title, '增加')]",
+                            "//input[@type='button' and contains(@value, '+')]",
+                            "//span[text()='+']/parent::button",
+                            "//i[contains(@class, 'plus')]/parent::button"
+                        ]
+                        
+                        for i, xpath in enumerate(xpath_selectors):
+                            try:
+                                xpath_buttons = driver.find_elements(By.XPATH, xpath)
+                                if show_debug_message and xpath_buttons:
+                                    print(f"TicketPlus: XPath {i+1} 找到 {len(xpath_buttons)} 個按鈕")
+                                
+                                for btn in xpath_buttons:
+                                    if btn.is_displayed() and btn.is_enabled():
+                                        # 檢查這個按鈕是否在票區附近
+                                        try:
+                                            # 檢查按鈕周圍是否有票區相關信息
+                                            nearby_elements = driver.find_elements(By.XPATH, 
+                                                f"//button[contains(text(), '+')]/ancestor::*[contains(text(), 'NT.') or contains(text(), '剩餘')][1]")
+                                            
+                                            if nearby_elements or '剩餘' in btn.find_element(By.XPATH, "./ancestor::div[3]").text:
+                                                plus_button = btn
+                                                if show_debug_message:
+                                                    print(f"TicketPlus: 透過XPath {i+1} 找到票區相關的加號按鈕")
+                                                break
+                                        except:
+                                            # 如果無法確認，就使用第一個找到的
+                                            plus_button = btn
+                                            if show_debug_message:
+                                                print(f"TicketPlus: 透過XPath {i+1} 找到按鈕 (無法確認關聯)")
+                                            break
+                                
+                                if plus_button:
+                                    break
+                            except Exception as xpath_exc:
+                                if show_debug_message:
+                                    print(f"TicketPlus: XPath {i+1} 失敗: {xpath_exc}")
+                                continue
+                                
+                except Exception as e3:
+                    if show_debug_message:
+                        print(f"TicketPlus: 方法3失敗: {e3}")
+            
+            # 如果還是找不到，列出所有可能的按鈕
+            if plus_button is None and show_debug_message:
+                print("TicketPlus: 找不到加號按鈕，列出頁面所有按鈕...")
+                try:
+                    all_buttons = driver.find_elements(By.TAG_NAME, "button")
+                    for i, btn in enumerate(all_buttons[:15]):  # 只列出前15個
+                        try:
+                            if btn.is_displayed():
+                                btn_text = btn.text.strip()
+                                btn_class = btn.get_attribute('class') or ''
+                                btn_aria = btn.get_attribute('aria-label') or ''
+                                print(f"  按鈕 {i+1}: 文字='{btn_text}', 類別='{btn_class[:30]}', aria-label='{btn_aria[:30]}'")
+                        except:
+                            continue
+                except Exception as list_exc:
+                    print(f"TicketPlus: 無法列出按鈕: {list_exc}")
+
+            if plus_button and plus_button.is_displayed() and plus_button.is_enabled():
+                # 確保按鈕在視野範圍內
+                driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", plus_button)
+                time.sleep(0.2)
+                
+                if show_debug_message:
+                    print(f"TicketPlus: 找到加號按鈕，準備點擊 {ticket_number - 1} 次")
+                
+                # 點擊加號按鈕來增加票數 (假設預設是1張，所以點擊 ticket_number - 1 次)
+                click_count = max(0, ticket_number - 1)  # 確保不會是負數
+                
+                for i in range(click_count):
+                    try:
+                        # 獲取點擊前的數量
+                        before_qty = get_current_ticket_quantity(driver)
+                        
+                        # 嘗試多種點擊方式
+                        click_success = False
+                        
+                        # 方式1: JavaScript點擊
+                        try:
+                            driver.execute_script("arguments[0].click();", plus_button)
+                            time.sleep(0.1)  # 增加等待時間
+                            after_qty_1 = get_current_ticket_quantity(driver)
+                            if after_qty_1 > before_qty:
+                                click_success = True
+                                if show_debug_message:
+                                    print(f"TicketPlus: 第 {i+1} 次點擊 (JS) 成功，數量 {before_qty} -> {after_qty_1}")
+                            else:
+                                # 再等待一下，有時候頁面更新需要時間
+                                time.sleep(0.1)
+                                after_qty_1_retry = get_current_ticket_quantity(driver)
+                                if after_qty_1_retry > before_qty:
+                                    click_success = True
+                                    if show_debug_message:
+                                        print(f"TicketPlus: 第 {i+1} 次點擊 (JS延遲) 成功，數量 {before_qty} -> {after_qty_1_retry}")
+                                else:
+                                    if show_debug_message:
+                                        print(f"TicketPlus: 第 {i+1} 次點擊 (JS) 無效果，數量仍為 {after_qty_1_retry}")
+                        except Exception as js_exc:
+                            if show_debug_message:
+                                print(f"TicketPlus: JS點擊失敗: {js_exc}")
+                        
+                        # 方式2: 如果JS點擊無效，嘗試直接點擊
+                        if not click_success:
+                            try:
+                                plus_button.click()
+                                time.sleep(0.1)  # 增加等待時間
+                                after_qty_2 = get_current_ticket_quantity(driver)
+                                if after_qty_2 > before_qty:
+                                    click_success = True
+                                    if show_debug_message:
+                                        print(f"TicketPlus: 第 {i+1} 次點擊 (直接) 成功，數量 {before_qty} -> {after_qty_2}")
+                                else:
+                                    # 再等待一下檢查
+                                    time.sleep(0.1)
+                                    after_qty_2_retry = get_current_ticket_quantity(driver)
+                                    if after_qty_2_retry > before_qty:
+                                        click_success = True
+                                        if show_debug_message:
+                                            print(f"TicketPlus: 第 {i+1} 次點擊 (直接延遲) 成功，數量 {before_qty} -> {after_qty_2_retry}")
+                                    else:
+                                        if show_debug_message:
+                                            print(f"TicketPlus: 第 {i+1} 次點擊 (直接) 無效果，數量仍為 {after_qty_2_retry}")
+                            except Exception as direct_exc:
+                                if show_debug_message:
+                                    print(f"TicketPlus: 直接點擊失敗: {direct_exc}")
+                        
+                        # 方式3: 如果還是無效，嘗試ActionChains
+                        if not click_success:
+                            try:
+                                from selenium.webdriver.common.action_chains import ActionChains
+                                ActionChains(driver).move_to_element(plus_button).click().perform()
+                                time.sleep(0.1)  # 增加等待時間
+                                after_qty_3 = get_current_ticket_quantity(driver)
+                                if after_qty_3 > before_qty:
+                                    click_success = True
+                                    if show_debug_message:
+                                        print(f"TicketPlus: 第 {i+1} 次點擊 (ActionChains) 成功，數量 {before_qty} -> {after_qty_3}")
+                                else:
+                                    # 最後再等待檢查一次
+                                    time.sleep(0.1)
+                                    after_qty_3_retry = get_current_ticket_quantity(driver)
+                                    if after_qty_3_retry > before_qty:
+                                        click_success = True
+                                        if show_debug_message:
+                                            print(f"TicketPlus: 第 {i+1} 次點擊 (ActionChains延遲) 成功，數量 {before_qty} -> {after_qty_3_retry}")
+                                    else:
+                                        if show_debug_message:
+                                            print(f"TicketPlus: 第 {i+1} 次點擊 (ActionChains) 無效果，數量仍為 {after_qty_3_retry}")
+                            except Exception as action_exc:
+                                if show_debug_message:
+                                    print(f"TicketPlus: ActionChains點擊失敗: {action_exc}")
+                        
+                        # 如果所有點擊方式都無效，但你說實際上點擊成功了，可能是檢測有問題
+                        if not click_success:
+                            if show_debug_message:
+                                print(f"TicketPlus: 第 {i+1} 次點擊所有方式都無效，但可能實際已生效")
+                                
+                                # 嘗試不同的檢測方式
+                                time.sleep(0.3)  # 等待更長時間
+                                final_check_qty = get_current_ticket_quantity(driver)
+                                if final_check_qty > before_qty:
+                                    click_success = True
+                                    if show_debug_message:
+                                        print(f"TicketPlus: 延遲檢測成功，數量 {before_qty} -> {final_check_qty}")
+                                else:
+                                    # 也許數量已經正確，只是我們檢測不到，繼續下一次點擊
+                                    if show_debug_message:
+                                        print(f"TicketPlus: 假設點擊生效，繼續下一次點擊")
+                                    click_success = True  # 假設成功，繼續流程
+                        
+                        # 如果這次點擊無效，就停止嘗試
+                        if not click_success:
+                            if show_debug_message:
+                                print(f"TicketPlus: 停止點擊，因為第 {i+1} 次確認無效")
+                            break
+                            
+                        # 驗證數量是否正確更新
+                        current_qty = get_current_ticket_quantity(driver)
+                        expected_qty = i + 2  # 預期的數量 (1 + 點擊次數 + 1)
+                        if show_debug_message:
+                            print(f"TicketPlus: 目前數量 {current_qty}, 預期數量 {expected_qty}")
+                            
+                    except Exception as click_exc:
+                        if show_debug_message:
+                            print(f"TicketPlus: 第 {i+1} 次點擊失敗: {click_exc}")
+                        break
+                
+                # 最終驗證數量是否正確 - 增加多次檢查
+                time.sleep(1.0)  # 等待最終狀態更新
+                final_qty = get_current_ticket_quantity(driver)
+                
+                # 如果第一次檢查不對，再試幾次
+                if final_qty != ticket_number:
+                    for retry_check in range(3):
+                        time.sleep(0.2)
+                        retry_qty = get_current_ticket_quantity(driver)
+                        if show_debug_message:
+                            print(f"TicketPlus: 重試檢查 {retry_check + 1}/3，數量: {retry_qty}")
+                        if retry_qty == ticket_number:
+                            final_qty = retry_qty
+                            break
+                
+                if show_debug_message:
+                    print(f"TicketPlus: 最終票券數量為 {final_qty}，目標是 {ticket_number}")
+
+                # 3. 修改判斷邏輯 - 如果檢測到的數量不對，但用戶說實際成功了，我們相信用戶
+                if auto_press_next_step_button:
+                    # 檢查是否有下一步按鈕可用，這可能是更可靠的成功指標
+                    next_available = False
+                    try:
+                        next_buttons = driver.find_elements(By.XPATH, 
+                            "//button[contains(text(), '下一步') or contains(text(), '繼續') or contains(text(), '確認')]")
+                        for btn in next_buttons:
+                            if btn.is_displayed() and btn.is_enabled():
+                                next_available = True
+                                break
+                        
+                        if not next_available:
+                            # 也檢查其他可能的下一步按鈕
+                            other_next_buttons = driver.find_elements(By.CSS_SELECTOR, 
+                                "button[type='submit']:not([disabled]), button.btn-next:not([disabled]), button.continue-btn:not([disabled])")
+                            for btn in other_next_buttons:
+                                if btn.is_displayed() and btn.is_enabled():
+                                    next_available = True
+                                    break
+                    except:
+                        pass
+                    
+                    # 如果數量正確或者下一步按鈕可用，則認為成功
+                    if final_qty == ticket_number or next_available:
+                        if show_debug_message:
+                            success_reason = "數量正確" if final_qty == ticket_number else "下一步按鈕可用"
+                            print(f"TicketPlus: 認為操作成功 ({success_reason})，準備下一步")
+                        
+                        # 標記頁面已處理，避免重複執行
+                        try:
+                            driver.execute_script("window.ticketplus_processed = true;")
+                        except:
+                            pass
+                            
+                        time.sleep(1.0)  # 增加等待時間讓頁面完全更新
+                        success = ticketplus_next_button_press(driver)
+                        if show_debug_message:
+                            print(f"TicketPlus: 下一步按鈕點擊結果: {success}")
+                        
+                        # 如果下一步失敗，嘗試再次點擊
+                        if not success:
+                            time.sleep(0.2)
+                            success = ticketplus_next_button_press(driver)
+                            if show_debug_message:
+                                print(f"TicketPlus: 重試下一步按鈕點擊結果: {success}")
+                                
+                        # 如果成功點擊下一步，等待頁面跳轉
+                        if success:
+                            time.sleep(2.0)  # 等待頁面跳轉
+                    else:
+                        if show_debug_message:
+                            print(f"TicketPlus: 數量設定可能不正確 ({final_qty} != {ticket_number}) 且無下一步按鈕，但繼續嘗試下一步")
+                        
+                        # 即使數量檢測不正確，也嘗試下一步，因為可能是檢測問題
+                        time.sleep(1.0)
+                        success = ticketplus_next_button_press(driver)
+                        if show_debug_message:
+                            print(f"TicketPlus: 強制嘗試下一步結果: {success}")
+                            
+                        if success:
+                            try:
+                                driver.execute_script("window.ticketplus_processed = true;")
+                            except:
+                                pass
+                            time.sleep(2.0)
+            else:
+                if show_debug_message:
+                    print("TicketPlus: 找不到可用的數量調整按鈕。")
+
+        except Exception as e:
+            if show_debug_message:
+                print(f"TicketPlus: 調整票券數量失敗: {e}")
+    elif show_debug_message:
+        print("TicketPlus: 票區選擇失敗，無法繼續。")
 
 def ticketplus_auto_select_seat(driver, config_dict):
     """
