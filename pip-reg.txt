@@ -1,0 +1,15 @@
+certifi>=2024.7.4
+charset-normalizer>=3.3.2
+cryptography>=43.0.0
+idna>=3.7
+selenium>=4.23.0
+selenium-stealth>=1.0.6
+undetected-chromedriver>=3.5.4
+pygame>=2.5.2
+pyperclip>=1.8.2
+ddddocr>=1.4.11
+urllib3>=2.2.2
+numpy>=1.26.0
+Pillow>=10.4.0
+requests>=2.32.0
+webdriver-manager

@@ -1,0 +1,9 @@
+# TixBot 依賴套件
+
+selenium>=4.0.0
+undetected-chromedriver
+webdriver-manager
+requests
+ddddocr
+pygame
+playsound
